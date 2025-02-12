@@ -211,30 +211,23 @@ fifty_day_file = os.path.join(fpath, '50days.pkl')
 hundred_day_file = os.path.join(fpath, '100days.pkl')
 twohundred_day_file = os.path.join(fpath, '200days.pkl')
 
+files = [ten_day_file, fifty_day_file, hundred_day_file, twohundred_day_file]
+multiday_models = []
+
 #load models
 with open(one_day_file, 'rb') as f:
     data1 = pickle.load(f)
-one_day_models = data1[0]
+one_day_models = data1[0] #this is the list of models, so no .to(device)
 
-with open(ten_day_file, 'rb') as f:
-    data10 = pickle.load(f)
-ten_day_model = data10[0][(0,2,2)]['model'] 
-ten_day_model.to(device)
+for file in files:
+    with open(file, 'rb') as f:
+        temp_data = pickle.load(f)
+    model = temp_data[0][(0,2,2)]['model'] 
+    model.to(device)
+    multiday_models.append(model)
 
-with open(fifty_day_file, 'rb') as f:
-    data50 = pickle.load(f)
-fifty_day_model = data50[0][(0,2,2)]['model']
-fifty_day_model.to(device)
+model_num_per_day = [4]*10 + [3]*40 + [2]*50 +[1]*100
 
-with open(hundred_day_file, 'rb') as f:
-    data100 = pickle.load(f)
-hundred_day_model = data100[0][(0,2,2)]['model']
-hundred_day_model.to(device)
-
-with open(twohundred_day_file, 'rb') as f:
-    data200 = pickle.load(f)
-twohundred_day_model = data200[0][(0,2,2)]['model']
-twohundred_day_model.to(device)
 print('models loaded')
 # ----------------------------------------------------------------------------------------------------------------------
 results = np.zeros((5,4,n_batches))
@@ -242,26 +235,16 @@ for day in range(n_batches):
     print(day)
 
     loader_test = dataset_dict[day]['loader_test']
-
     one_day_model = one_day_models[day]['model']
     one_day_model.to(device)
+
+    #multiday_models= [ten_day_model, fifty_day_model, hundred_day_model, twohundred_day_model]
+    num_models_today = model_num_per_day[day]
     
-    multiday_models= [ten_day_model, fifty_day_model, hundred_day_model, twohundred_day_model]
-    if day < 10:
-        for model,idx in zip(multiday_models,range(4)):
+    for model,idx in zip(multiday_models[(4-num_models_today):],range(num_models_today)):
             test_corr = check_accuracy_multiday(model, loader_test)
-            results[idx,:,day] = test_corr[0]
-    elif day < 50:
-        for model,idx in zip(multiday_models[1:],range(3)):
-            test_corr = check_accuracy_multiday(model, loader_test)
-            results[idx+1,:,day] = test_corr[0]
-    elif day < 100:
-        for model,idx in zip(multiday_models[2:],range(2)):
-            test_corr = check_accuracy_multiday(model, loader_test)
-            results[idx+2,:,day] = test_corr[0]
-    elif day < 200:
-        test_corr = check_accuracy_multiday(twohundred_day_model, loader_test)
-        results[3,:,day] = test_corr[0]
+            results[idx+(4-num_models_today),:,day] = test_corr[0]
+    
     corr, _, _ = AnalysisTools.calc_model_performance(one_day_model, loader_test, normalize_y=False)
     results[4,:,day] = corr
 
