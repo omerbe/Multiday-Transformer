@@ -1,6 +1,7 @@
 # Multiday-Transformer
 A short project which investigates whether stitching together training data from many different neural recording sessions improves single day performance of a transformer decoder when compared to training on a single day. 
 
+[[PDF]](https://github.com/omerbe/Multiday-Transformer/blob/main/Research%20report%20Fall%2024.PDF)
 ### Introduction
 
 Recent successes of large language models have shown the potential of transformer architectures [1]. In particular, these advances have shown that scaling up the size of the training set can drastically improve model performance. Unfortunately, decoding from neurons is more complex than decoding from language. Unlike words in language, neurons shift over time so that subsequent days cannot be aligned [2]. To overcome this, neural transformer models utilize various tokenization techniques to group together like neurons while maintaining temporal and spatial information [3,4]. Further, these models incorporate fine tuning layers for the specific decoding task. With these additions, large neural transformer models have shown promising results.
